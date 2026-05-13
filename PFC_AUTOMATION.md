@@ -7,10 +7,11 @@ interface channel is created.
 
 ## Files
 
-- `run_symmetric_pack.dat`: main PFC data file. It builds the 3 mm x 3 mm x 6 mm wall box, calls the generator, relaxes the assembly, checks it, and saves the model.
+- `run_symmetric_pack.dat`: main PFC data file. It builds the 3 mm x 3 mm x 6 mm wall box, calls the generator, relaxes the assembly, checks it, saves the model, and exports STL.
 - `symmetric_pack.py`: particle generator. Edit the top parameter section to change target porosity, radius bins, random seed, and placement tolerance.
 - `symmetric_pack_check.py`: verifies bounds, geometric porosity, side-wall clearance for random balls, and mirror symmetry for wall balls.
 - `symmetric_pack_project.py`: after relaxation, projects wall mirror groups back to exact symmetry and keeps random balls inside the full-box constraints.
+- `export_pack_stl.py`: exports particles and the six wall faces to one ASCII STL file.
 - `run_pfc_console.ps1`: optional PowerShell wrapper for `D:\PFC\exe64\pfc3d600_console.exe`.
 
 ## Manual PFC Console Run
@@ -25,6 +26,12 @@ The final state is saved as:
 
 ```text
 symmetric_pack_porosity_0p40.sav
+```
+
+The particle and wall STL is exported as:
+
+```text
+E:\codexfile\pfc cyclic particle\STLfile\cyc-particles-1.stl
 ```
 
 ## Optional Console Helper

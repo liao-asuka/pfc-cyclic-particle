@@ -44,4 +44,5 @@ model solve ratio-average 1e-6 cycles-total 200000
 program call 'symmetric_pack_project.py' suppress
 program call 'symmetric_pack_check.py' suppress
 model save 'symmetric_pack_porosity_0p40.sav'
+program call 'export_pack_stl.py' suppress
 program return
