@@ -1,0 +1,48 @@
+; PFC3D cyclic-face / interior-random particle packing model
+; Dimensions: 3 mm x 3 mm x 6 mm, centered at the origin.
+; Run in the PFC Console with:
+;   program call 'run_cyclic_pack.dat'
+
+model new
+model title '3x3x6 mm cyclic-face random-interior particle packing'
+model deterministic on
+model random 10001
+model domain extent -2.0 2.0 -2.0 2.0 -3.5 3.5
+model largestrain on
+model mechanical timestep safety-factor 0.8
+
+; Contact model and default particle properties. Tune these for later tests.
+contact cmat default model linear method deformability emod 1e7 kratio 1.25 property fric 0.25
+
+; Six independently named finite walls. Top is inlet, bottom is outlet.
+wall generate id 1 name 'inlet' group 'inlet' polygon ...
+    (-1.5,-1.5, 3.0) ( 1.5,-1.5, 3.0) (-1.5, 1.5, 3.0) ( 1.5, 1.5, 3.0)
+wall generate id 2 name 'outlet' group 'outlet' polygon ...
+    (-1.5,-1.5,-3.0) (-1.5, 1.5,-3.0) ( 1.5,-1.5,-3.0) ( 1.5, 1.5,-3.0)
+wall generate id 3 name 'wall_left' group 'wall_left' polygon ...
+    (-1.5,-1.5,-3.0) (-1.5,-1.5, 3.0) (-1.5, 1.5,-3.0) (-1.5, 1.5, 3.0)
+wall generate id 4 name 'wall_right' group 'wall_right' polygon ...
+    ( 1.5,-1.5,-3.0) ( 1.5, 1.5,-3.0) ( 1.5,-1.5, 3.0) ( 1.5, 1.5, 3.0)
+wall generate id 5 name 'wall_front' group 'wall_front' polygon ...
+    (-1.5,-1.5,-3.0) ( 1.5,-1.5,-3.0) (-1.5,-1.5, 3.0) ( 1.5,-1.5, 3.0)
+wall generate id 6 name 'wall_back' group 'wall_back' polygon ...
+    (-1.5, 1.5,-3.0) (-1.5, 1.5, 3.0) ( 1.5, 1.5,-3.0) ( 1.5, 1.5, 3.0)
+
+program call 'cyclic_pack.py' suppress
+
+ball attribute density 2160.0 damp 0.8
+model gravity 0 0 0
+
+; Relax the assembly without gravity. Face-adjacent particles are paired across
+; selected cyclic cut faces; interior particles remain random.
+; Increase cycles or tighten ratio for denser/stiffer packs.
+model cycle 5000 calm 250
+model solve ratio-average 1e-6 cycles-total 200000
+
+; Re-project relaxed coordinates to exact cyclic face-pair constraints and
+; strict box bounds, then re-check and save.
+program call 'cyclic_pack_project.py' suppress
+program call 'cyclic_pack_check.py' suppress
+model save 'outputs/cyclic_pack_porosity_0p40.sav'
+program call 'export_pack_stl.py' suppress
+program return
