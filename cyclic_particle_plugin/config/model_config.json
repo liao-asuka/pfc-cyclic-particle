@@ -1,0 +1,62 @@
+﻿{
+    "model_name":  "sample_case_1",
+    "unit":  "mm",
+    "domain":  {
+                   "x":  3,
+                   "y":  3,
+                   "z":  6
+               },
+    "target_porosity":  0.35,
+    "periodic_axes":  [
+                          "x",
+                          "y"
+                      ],
+    "output_mode":  "fluid",
+    "output_dir":  "E:/cyclic_particle_outputs",
+    "radius_bins":  [
+                        {
+                            "name":  "very fine",
+                            "r_min":  0.0625,
+                            "r_max":  0.0875,
+                            "volume_fraction":  0.1
+                        },
+                        {
+                            "name":  "fine",
+                            "r_min":  0.0875,
+                            "r_max":  0.125,
+                            "volume_fraction":  0.2
+                        },
+                        {
+                            "name":  "medium",
+                            "r_min":  0.125,
+                            "r_max":  0.1875,
+                            "volume_fraction":  0.4
+                        },
+                        {
+                            "name":  "coarse",
+                            "r_min":  0.1875,
+                            "r_max":  0.25,
+                            "volume_fraction":  0.2
+                        },
+                        {
+                            "name":  "very coarse",
+                            "r_min":  0.25,
+                            "r_max":  0.5,
+                            "volume_fraction":  0.1
+                        }
+                    ],
+    "fluid_surface":  {
+                          "enabled":  true,
+                          "radius_shrink":  0.002,
+                          "grid_spacing":  0.025,
+                          "smooth_sigma_cells":  2.2,
+                          "smooth_clip_distance":  0.15,
+                          "level_offset":  -0.008
+                      },
+    "paraview":  {
+                     "pvpython_path":  "D:/ParaView 6.1.0/bin/pvpython.exe"
+                 },
+    "pfc":  {
+                "gui_path":  "D:/PFC/exe64/pfc3d600_gui.exe"
+            }
+}

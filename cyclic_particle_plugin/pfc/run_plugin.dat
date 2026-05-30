@@ -1,0 +1,4 @@
+; Cyclic Particle Plugin entry for PFC3D 6.x
+; This file is updated by the config editor before each run.
+
+program call 'E:/codexfile/pfc cyclic particle/cyclic_particle_plugin/scripts/run_plugin_bootstrap.py'

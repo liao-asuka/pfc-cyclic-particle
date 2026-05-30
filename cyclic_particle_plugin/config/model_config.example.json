@@ -1,0 +1,50 @@
+{
+  "model_name": "sample_case",
+  "unit": "mm",
+  "domain": {
+    "x": 3.0,
+    "y": 3.0,
+    "z": 6.0
+  },
+  "target_porosity": 0.40,
+  "periodic_axes": [
+    "x",
+    "y"
+  ],
+  "output_mode": "both",
+  "output_dir": "E:/cyclic_particle_outputs",
+  "radius_bins": [
+    {
+      "name": "fine",
+      "r_min": 0.2125,
+      "r_max": 0.24,
+      "volume_fraction": 0.25
+    },
+    {
+      "name": "medium",
+      "r_min": 0.24,
+      "r_max": 0.275,
+      "volume_fraction": 0.45
+    },
+    {
+      "name": "coarse",
+      "r_min": 0.275,
+      "r_max": 0.30,
+      "volume_fraction": 0.30
+    }
+  ],
+  "fluid_surface": {
+    "enabled": true,
+    "radius_shrink": 0.002,
+    "grid_spacing": 0.025,
+    "smooth_sigma_cells": 2.2,
+    "smooth_clip_distance": 0.150,
+    "level_offset": -0.008
+  },
+  "paraview": {
+    "pvpython_path": "D:/ParaView 6.1.0/bin/pvpython.exe"
+  },
+  "pfc": {
+    "gui_path": "D:/PFC/exe64/pfc3d600_gui.exe"
+  }
+}
