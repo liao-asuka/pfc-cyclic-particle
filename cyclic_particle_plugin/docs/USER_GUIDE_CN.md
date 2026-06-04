@@ -232,21 +232,39 @@ both
 ```json
 "fluid_surface": {
   "enabled": true,
+  "method": "cp4a_smooth",
   "radius_shrink": 0.002,
   "grid_spacing": 0.025,
   "smooth_sigma_cells": 2.2,
   "smooth_clip_distance": 0.150,
-  "level_offset": -0.008
+  "level_offset": -0.008,
+  "anti_spike_sigma_cells": 0.0,
+  "max_normal_angle_degrees": 80.0,
+  "mesh_smooth_iterations": 0,
+  "mesh_smooth_pass_band": 0.08,
+  "robust_open_cells": 1,
+  "robust_close_cells": 1,
+  "robust_min_component_voxels": 800,
+  "robust_keep_largest_component": true,
+  "robust_sdf_smooth_sigma_cells": 0.65
 }
 ```
 
 常用调节建议：
 
+- `method` 推荐使用 `robust_v2`；它会在 STL contour 前清理体素流体域，减少孤立流体碎片和薄片桥接。
+- `robust_open_cells` 用于去除细长、扁平的流体桥接；默认 `1`。
+- `robust_close_cells` 用于填补很小的裂缝；默认 `1`。
+- `robust_keep_largest_component` 会删除独立流体碎片，并在判断连通性时考虑周期面连接。
+- `robust_sdf_smooth_sigma_cells` 用于平滑重建后的 signed-distance 场。
 - 想要更光滑：适当增大 `smooth_sigma_cells`。
 - 想保留更多颗粒细节：适当减小 `smooth_sigma_cells` 或 `grid_spacing`。
 - 想让流体域和颗粒之间略微留出间隙：增大 `radius_shrink`。
 - 想降低 STL 面片数量：增大 `grid_spacing`。
 
+- 想减少尖锐、扁平、针状的局部结构：增大 `anti_spike_sigma_cells`，例如从 `0.8` 调到 `1.0` 或 `1.2`。
+- `max_normal_angle_degrees` 用于统计相邻 STL 面片法向夹角，默认 `80` 度。
+- `mesh_smooth_iterations` 和 `mesh_smooth_pass_band` 会尝试后处理平滑；只有不破坏水密性且不增加锐边数量时才会被接受。
 目前设计原则是：优先保证流体域光滑、边界面分类清楚、周期面几何对应；孔隙率精确性排在其后。
 
 ### ParaView 路径
@@ -312,6 +330,8 @@ y_max
 z_min
 z_max
 ```
+
+对于写在 `periodic_axes` 中的周期方向，流体域导出器会在 contour 之前同步相对两侧边界附近的一小段 level-set 网格。边界面仍然和 `particle_walls` 来自同一个 VTK 闭合曲面，因此流体域 STL 会保持水密闭合，内部流体表面会和外部边界面连接起来。
 
 其中：
 

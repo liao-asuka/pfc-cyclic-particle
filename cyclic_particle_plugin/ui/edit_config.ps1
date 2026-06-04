@@ -18,6 +18,57 @@ function Load-Config {
     if ($null -eq $cfg.pfc) {
         $cfg | Add-Member -MemberType NoteProperty -Name pfc -Value ([pscustomobject]@{ gui_path = "D:/PFC/exe64/pfc3d600_gui.exe" })
     }
+    if ($null -eq $cfg.fluid_surface.max_normal_angle_degrees) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name max_normal_angle_degrees -Value 80.0
+    }
+    if ($null -eq $cfg.fluid_surface.mesh_smooth_iterations) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name mesh_smooth_iterations -Value 18
+    }
+    if ($null -eq $cfg.fluid_surface.mesh_smooth_pass_band) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name mesh_smooth_pass_band -Value 0.08
+    }
+    if ($null -eq $cfg.fluid_surface.anti_spike_sigma_cells) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name anti_spike_sigma_cells -Value 0.8
+    }
+    if ($null -eq $cfg.fluid_surface.method) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name method -Value "cp4a_smooth"
+    }
+    if ($null -eq $cfg.fluid_surface.robust_open_cells) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name robust_open_cells -Value 1
+    }
+    if ($null -eq $cfg.fluid_surface.robust_close_cells) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name robust_close_cells -Value 1
+    }
+    if ($null -eq $cfg.fluid_surface.robust_min_component_voxels) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name robust_min_component_voxels -Value 800
+    }
+    if ($null -eq $cfg.fluid_surface.robust_keep_largest_component) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name robust_keep_largest_component -Value $true
+    }
+    if ($null -eq $cfg.fluid_surface.robust_sdf_smooth_sigma_cells) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name robust_sdf_smooth_sigma_cells -Value 0.65
+    }
+    if ($null -eq $cfg.fluid_surface.cp4a_cleanup_enabled) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name cp4a_cleanup_enabled -Value $true
+    }
+    if ($null -eq $cfg.fluid_surface.cp4a_cleanup_open_cells) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name cp4a_cleanup_open_cells -Value 1
+    }
+    if ($null -eq $cfg.fluid_surface.cp4a_cleanup_close_cells) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name cp4a_cleanup_close_cells -Value 0
+    }
+    if ($null -eq $cfg.fluid_surface.cp4a_cleanup_blend_cells) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name cp4a_cleanup_blend_cells -Value 1
+    }
+    if ($null -eq $cfg.fluid_surface.cp4a_cleanup_periodic_band_cells) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name cp4a_cleanup_periodic_band_cells -Value 1
+    }
+    if ($null -eq $cfg.fluid_surface.cp4a_cleanup_min_component_voxels) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name cp4a_cleanup_min_component_voxels -Value 800
+    }
+    if ($null -eq $cfg.fluid_surface.cp4a_cleanup_keep_largest_component) {
+        $cfg.fluid_surface | Add-Member -MemberType NoteProperty -Name cp4a_cleanup_keep_largest_component -Value $true
+    }
     return $cfg
 }
 
@@ -60,6 +111,53 @@ function Test-ConfigObject {
         }
     }
     if ([math]::Abs($sum - 1.0) -gt 0.000001) { $errors.Add(("volume fractions must sum to 1.0, got {0:N8}" -f $sum)) }
+    if (@("cp4a_smooth","legacy","robust_v2") -notcontains ([string]$Config.fluid_surface.method)) { $errors.Add("fluid method must be cp4a_smooth, legacy or robust_v2") }
+    try {
+        $antiSpike = [double]$Config.fluid_surface.anti_spike_sigma_cells
+        if ($antiSpike -lt 0.0) { $errors.Add("anti-spike sigma must be non-negative") }
+    } catch {
+        $errors.Add("anti-spike sigma must be numeric")
+    }
+    try {
+        $angle = [double]$Config.fluid_surface.max_normal_angle_degrees
+        if ($angle -lt 1.0 -or $angle -gt 179.0) { $errors.Add("max normal angle must be between 1 and 179 degrees") }
+    } catch {
+        $errors.Add("max normal angle must be numeric")
+    }
+    try {
+        $iters = [double]$Config.fluid_surface.mesh_smooth_iterations
+        if ($iters -lt 0.0) { $errors.Add("mesh smooth iterations must be non-negative") }
+    } catch {
+        $errors.Add("mesh smooth iterations must be numeric")
+    }
+    try {
+        $passBand = [double]$Config.fluid_surface.mesh_smooth_pass_band
+        if ($passBand -le 0.0 -or $passBand -gt 2.0) { $errors.Add("mesh smooth pass band must be between 0 and 2") }
+    } catch {
+        $errors.Add("mesh smooth pass band must be numeric")
+    }
+    foreach ($name in @("robust_open_cells","robust_close_cells","robust_min_component_voxels")) {
+        try {
+            $value = [double]$Config.fluid_surface.$name
+            if ($value -lt 0.0) { $errors.Add("$name must be non-negative") }
+        } catch {
+            $errors.Add("$name must be numeric")
+        }
+    }
+    foreach ($name in @("cp4a_cleanup_open_cells","cp4a_cleanup_close_cells","cp4a_cleanup_blend_cells","cp4a_cleanup_periodic_band_cells","cp4a_cleanup_min_component_voxels")) {
+        try {
+            $value = [double]$Config.fluid_surface.$name
+            if ($value -lt 0.0) { $errors.Add("$name must be non-negative") }
+        } catch {
+            $errors.Add("$name must be numeric")
+        }
+    }
+    try {
+        $value = [double]$Config.fluid_surface.robust_sdf_smooth_sigma_cells
+        if ($value -lt 0.0) { $errors.Add("robust_sdf_smooth_sigma_cells must be non-negative") }
+    } catch {
+        $errors.Add("robust_sdf_smooth_sigma_cells must be numeric")
+    }
     return $errors
 }
 
@@ -408,11 +506,48 @@ $binsSection.Children.Add($binGrid) | Out-Null
 
 $fluid = Add-Section "Fluid Surface" "Controls the smoothed level-set STL for Fluent Meshing. Smoothness and cyclic-face correspondence are prioritized."
 $row = Add-Row $fluid
+$method = Add-Field $row "Method" "cp4a_smooth returns to the original CP4A strong-smoothed level-set exporter." $cfg.fluid_surface.method 140
 $radiusShrink = Add-Field $row "Radius shrink" "Slightly shrinks particles before fluid-surface extraction." $cfg.fluid_surface.radius_shrink 140
 $gridSpacing = Add-Field $row "Grid spacing" "Smaller keeps more detail but creates more STL triangles." $cfg.fluid_surface.grid_spacing 140
 $smoothSigma = Add-Field $row "Smooth sigma" "Larger values make the inner fluid surface smoother." $cfg.fluid_surface.smooth_sigma_cells 140
+ 
+$row = Add-Row $fluid
 $smoothClip = Add-Field $row "Smooth clip" "Distance range used before smoothing the solid field." $cfg.fluid_surface.smooth_clip_distance 140
 $levelOffset = Add-Field $row "Level offset" "Small offset for the extracted level-set surface." $cfg.fluid_surface.level_offset 140
+$antiSpikeSigma = Add-Field $row "Anti-spike sigma" "Extra level-set smoothing to remove sharp thin features." $cfg.fluid_surface.anti_spike_sigma_cells 140
+$maxNormalAngle = Add-Field $row "Max normal angle" "Adjacent STL faces over this angle trigger mesh smoothing." $cfg.fluid_surface.max_normal_angle_degrees 140
+
+$meshSmoothIterations = Add-Field $row "Mesh smooth iter." "More iterations reduce spikes but can soften fine details." $cfg.fluid_surface.mesh_smooth_iterations 140
+$meshSmoothPassBand = Add-Field $row "Mesh pass band" "Lower values smooth more strongly; 0.05-0.12 is typical." $cfg.fluid_surface.mesh_smooth_pass_band 140
+$row = Add-Row $fluid
+$robustOpen = Add-Field $row "Robust open" "Removes thin fluid bridges in voxel space." $cfg.fluid_surface.robust_open_cells 140
+$robustClose = Add-Field $row "Robust close" "Fills tiny slits after opening." $cfg.fluid_surface.robust_close_cells 140
+$robustMin = Add-Field $row "Min comp voxels" "Small disconnected fluid components below this are removed." $cfg.fluid_surface.robust_min_component_voxels 140
+$robustSdf = Add-Field $row "SDF smooth" "Smoothing applied to the rebuilt signed-distance field." $cfg.fluid_surface.robust_sdf_smooth_sigma_cells 140
+$robustKeepLargest = New-Object System.Windows.Controls.CheckBox
+$robustKeepLargest.Content = "Keep largest component"
+$robustKeepLargest.ToolTip = "When enabled, disconnected fluid pieces are removed except for the largest periodic-aware component."
+$robustKeepLargest.Margin = "6,18,6,6"
+$robustKeepLargest.IsChecked = [bool]$cfg.fluid_surface.robust_keep_largest_component
+$row.Children.Add($robustKeepLargest) | Out-Null
+$row = Add-Row $fluid
+$cp4aOpen = Add-Field $row "CP4A open" "Optional cutting of extremely thin CP4A fluid bridges; default 0 is conservative." $cfg.fluid_surface.cp4a_cleanup_open_cells 140
+$cp4aClose = Add-Field $row "CP4A close" "Optional local closing after cutting thin bridges." $cfg.fluid_surface.cp4a_cleanup_close_cells 140
+$cp4aBlend = Add-Field $row "CP4A blend" "Local signed-distance replacement band around modified voxels." $cfg.fluid_surface.cp4a_cleanup_blend_cells 140
+$cp4aPBand = Add-Field $row "CP4A pband" "Periodic boundary protection band in grid cells. Keep 1 unless cyclic faces still mismatch." $cfg.fluid_surface.cp4a_cleanup_periodic_band_cells 140
+$cp4aMin = Add-Field $row "CP4A min voxels" "Disconnected CP4A fluid pieces below this are removed." $cfg.fluid_surface.cp4a_cleanup_min_component_voxels 140
+$cp4aCleanup = New-Object System.Windows.Controls.CheckBox
+$cp4aCleanup.Content = "CP4A cleanup"
+$cp4aCleanup.ToolTip = "Enable local cleanup of isolated fluid pieces and very thin CP4A channels."
+$cp4aCleanup.Margin = "6,18,6,6"
+$cp4aCleanup.IsChecked = [bool]$cfg.fluid_surface.cp4a_cleanup_enabled
+$row.Children.Add($cp4aCleanup) | Out-Null
+$cp4aKeepLargest = New-Object System.Windows.Controls.CheckBox
+$cp4aKeepLargest.Content = "CP4A keep largest"
+$cp4aKeepLargest.ToolTip = "Remove disconnected fluid pieces except for the largest periodic-aware CP4A fluid component."
+$cp4aKeepLargest.Margin = "6,18,6,6"
+$cp4aKeepLargest.IsChecked = [bool]$cfg.fluid_surface.cp4a_cleanup_keep_largest_component
+$row.Children.Add($cp4aKeepLargest) | Out-Null
 
 function Build-ConfigFromUi {
     $axes = @()
@@ -445,11 +580,28 @@ function Build-ConfigFromUi {
         radius_bins = $bins
         fluid_surface = [ordered]@{
             enabled = $true
+            method = $method.Text.Trim()
             radius_shrink = [double]$radiusShrink.Text
             grid_spacing = [double]$gridSpacing.Text
             smooth_sigma_cells = [double]$smoothSigma.Text
             smooth_clip_distance = [double]$smoothClip.Text
             level_offset = [double]$levelOffset.Text
+            anti_spike_sigma_cells = [double]$antiSpikeSigma.Text
+            max_normal_angle_degrees = [double]$maxNormalAngle.Text
+            mesh_smooth_iterations = [int]([double]$meshSmoothIterations.Text)
+            mesh_smooth_pass_band = [double]$meshSmoothPassBand.Text
+            robust_open_cells = [int]([double]$robustOpen.Text)
+            robust_close_cells = [int]([double]$robustClose.Text)
+            robust_min_component_voxels = [int]([double]$robustMin.Text)
+            robust_keep_largest_component = [bool]$robustKeepLargest.IsChecked
+            robust_sdf_smooth_sigma_cells = [double]$robustSdf.Text
+            cp4a_cleanup_enabled = [bool]$cp4aCleanup.IsChecked
+            cp4a_cleanup_open_cells = [int]([double]$cp4aOpen.Text)
+            cp4a_cleanup_close_cells = [int]([double]$cp4aClose.Text)
+            cp4a_cleanup_blend_cells = [int]([double]$cp4aBlend.Text)
+            cp4a_cleanup_periodic_band_cells = [int]([double]$cp4aPBand.Text)
+            cp4a_cleanup_min_component_voxels = [int]([double]$cp4aMin.Text)
+            cp4a_cleanup_keep_largest_component = [bool]$cp4aKeepLargest.IsChecked
         }
         paraview = [ordered]@{
             pvpython_path = $pvPath.Text.Trim().Replace("\", "/")

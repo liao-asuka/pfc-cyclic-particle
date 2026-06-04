@@ -105,6 +105,26 @@ Important fields:
 - `paraview.pvpython_path`: ParaView Python executable used for VTK/scipy surface extraction.
 - `pfc.gui_path`: PFC3D GUI executable used by the run button.
 
+Useful `fluid_surface` spike-control parameters:
+
+- `method`: `cp4a_smooth` is the default exporter and matches the CP4A
+  strong-smoothed level-set route. `robust_v2` is available for experiments with
+  voxel cleanup; `legacy` keeps the older direct path.
+- `robust_open_cells`: voxel-space opening radius used to remove thin fluid
+  bridges and sheet-like artifacts before contouring.
+- `robust_close_cells`: voxel-space closing radius used to fill very small slits
+  after opening.
+- `robust_keep_largest_component`: removes disconnected fluid pieces, using
+  periodic face merging before deciding the largest component.
+- `robust_sdf_smooth_sigma_cells`: smooths the rebuilt signed-distance field.
+- `anti_spike_sigma_cells`: extra level-set smoothing before contouring. Increase
+  it when thin sharp fins or needles appear on the fluid wall.
+- `max_normal_angle_degrees`: adjacent-face normal angle used to count sharp STL
+  edges. The default is `80`.
+- `mesh_smooth_iterations` and `mesh_smooth_pass_band`: optional mesh smoothing
+  attempt after contouring. The exporter keeps this result only when it does not
+  create open/non-manifold edges and does not increase sharp-edge count.
+
 `radius_bins` rules:
 
 - 1 to 5 bins.
@@ -147,6 +167,12 @@ z_max
 ```
 
 This lets Fluent Meshing keep inlet/outlet/wall/cyclic patches separated.
+
+For axes listed in `periodic_axes`, the fluid exporter synchronizes a narrow
+band of level-set grid cells on the two opposing boundary sides before
+contouring. The boundary patches are still cut from the same VTK contour as
+`particle_walls`, so the fluid STL remains watertight and the inner fluid
+surface connects to the outer box boundaries.
 
 ## ParaView Dependency
 

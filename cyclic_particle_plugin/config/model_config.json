@@ -1,5 +1,5 @@
 ﻿{
-    "model_name":  "sample_case_1",
+    "model_name":  "sand_3",
     "unit":  "mm",
     "domain":  {
                    "x":  3,
@@ -47,11 +47,28 @@
                     ],
     "fluid_surface":  {
                           "enabled":  true,
+                          "method":  "cp4a_smooth",
                           "radius_shrink":  0.002,
                           "grid_spacing":  0.025,
                           "smooth_sigma_cells":  2.2,
                           "smooth_clip_distance":  0.15,
-                          "level_offset":  -0.008
+                          "level_offset":  -0.008,
+                          "anti_spike_sigma_cells":  0,
+                          "max_normal_angle_degrees":  80,
+                          "mesh_smooth_iterations":  0,
+                          "mesh_smooth_pass_band":  0.08,
+                          "robust_open_cells":  1,
+                          "robust_close_cells":  1,
+                          "robust_min_component_voxels":  800,
+                          "robust_keep_largest_component":  true,
+                          "robust_sdf_smooth_sigma_cells":  0.65,
+                          "cp4a_cleanup_enabled":  true,
+                          "cp4a_cleanup_open_cells":  1,
+                          "cp4a_cleanup_close_cells":  0,
+                          "cp4a_cleanup_blend_cells":  1,
+                          "cp4a_cleanup_periodic_band_cells":  1,
+                          "cp4a_cleanup_min_component_voxels":  800,
+                          "cp4a_cleanup_keep_largest_component":  true
                       },
     "paraview":  {
                      "pvpython_path":  "D:/ParaView 6.1.0/bin/pvpython.exe"

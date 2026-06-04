@@ -142,6 +142,9 @@ def validate_config(config, check_output_dir=True, check_pvpython=False):
     if not isinstance(fluid, dict):
         errors.append("fluid_surface must be an object")
     else:
+        method = str(fluid.get("method", "legacy")).lower()
+        if method not in ("cp4a_smooth", "legacy", "robust_v2"):
+            errors.append("fluid_surface.method must be cp4a_smooth, legacy or robust_v2")
         for key in ("grid_spacing", "smooth_sigma_cells", "smooth_clip_distance"):
             try:
                 require_number(fluid.get(key), "fluid_surface.{}".format(key), min_value=0.0)
@@ -150,6 +153,19 @@ def validate_config(config, check_output_dir=True, check_pvpython=False):
         try:
             require_number(fluid.get("radius_shrink", 0.0), "fluid_surface.radius_shrink", min_value=0.0)
             require_number(fluid.get("level_offset", 0.0), "fluid_surface.level_offset")
+            require_number(fluid.get("anti_spike_sigma_cells", 0.8), "fluid_surface.anti_spike_sigma_cells", min_value=0.0)
+            require_number(fluid.get("max_normal_angle_degrees", 80.0), "fluid_surface.max_normal_angle_degrees", min_value=1.0, max_value=179.0)
+            require_number(fluid.get("mesh_smooth_iterations", 18), "fluid_surface.mesh_smooth_iterations", min_value=0.0)
+            require_number(fluid.get("mesh_smooth_pass_band", 0.08), "fluid_surface.mesh_smooth_pass_band", min_value=0.001, max_value=2.0)
+            require_number(fluid.get("robust_open_cells", 1), "fluid_surface.robust_open_cells", min_value=0.0, max_value=6.0)
+            require_number(fluid.get("robust_close_cells", 1), "fluid_surface.robust_close_cells", min_value=0.0, max_value=6.0)
+            require_number(fluid.get("robust_min_component_voxels", 800), "fluid_surface.robust_min_component_voxels", min_value=0.0)
+            require_number(fluid.get("robust_sdf_smooth_sigma_cells", 0.65), "fluid_surface.robust_sdf_smooth_sigma_cells", min_value=0.0)
+            require_number(fluid.get("cp4a_cleanup_open_cells", 1), "fluid_surface.cp4a_cleanup_open_cells", min_value=0.0, max_value=6.0)
+            require_number(fluid.get("cp4a_cleanup_close_cells", 0), "fluid_surface.cp4a_cleanup_close_cells", min_value=0.0, max_value=6.0)
+            require_number(fluid.get("cp4a_cleanup_blend_cells", 2), "fluid_surface.cp4a_cleanup_blend_cells", min_value=0.0, max_value=8.0)
+            require_number(fluid.get("cp4a_cleanup_periodic_band_cells", 1), "fluid_surface.cp4a_cleanup_periodic_band_cells", min_value=0.0, max_value=4.0)
+            require_number(fluid.get("cp4a_cleanup_min_component_voxels", 800), "fluid_surface.cp4a_cleanup_min_component_voxels", min_value=0.0)
         except ConfigError as exc:
             errors.append(str(exc))
 
@@ -176,8 +192,42 @@ def normalized_config(config):
         item["r_max"] = float(item["r_max"])
         item["volume_fraction"] = float(item["volume_fraction"])
     fluid = result["fluid_surface"]
+    fluid.setdefault("method", "cp4a_smooth")
+    fluid.setdefault("max_normal_angle_degrees", 80.0)
+    fluid.setdefault("mesh_smooth_iterations", 18)
+    fluid.setdefault("mesh_smooth_pass_band", 0.08)
+    fluid.setdefault("anti_spike_sigma_cells", 0.8)
+    fluid.setdefault("robust_open_cells", 1)
+    fluid.setdefault("robust_close_cells", 1)
+    fluid.setdefault("robust_min_component_voxels", 800)
+    fluid.setdefault("robust_keep_largest_component", True)
+    fluid.setdefault("robust_sdf_smooth_sigma_cells", 0.65)
+    fluid.setdefault("cp4a_cleanup_enabled", True)
+    fluid.setdefault("cp4a_cleanup_open_cells", 1)
+    fluid.setdefault("cp4a_cleanup_close_cells", 0)
+    fluid.setdefault("cp4a_cleanup_blend_cells", 1)
+    fluid.setdefault("cp4a_cleanup_periodic_band_cells", 1)
+    fluid.setdefault("cp4a_cleanup_min_component_voxels", 800)
+    fluid.setdefault("cp4a_cleanup_keep_largest_component", True)
+    fluid["method"] = str(fluid["method"]).lower()
     for key in ("radius_shrink", "grid_spacing", "smooth_sigma_cells", "smooth_clip_distance", "level_offset"):
         fluid[key] = float(fluid[key])
+    fluid["anti_spike_sigma_cells"] = float(fluid["anti_spike_sigma_cells"])
+    fluid["max_normal_angle_degrees"] = float(fluid["max_normal_angle_degrees"])
+    fluid["mesh_smooth_iterations"] = int(float(fluid["mesh_smooth_iterations"]))
+    fluid["mesh_smooth_pass_band"] = float(fluid["mesh_smooth_pass_band"])
+    fluid["robust_open_cells"] = int(float(fluid["robust_open_cells"]))
+    fluid["robust_close_cells"] = int(float(fluid["robust_close_cells"]))
+    fluid["robust_min_component_voxels"] = int(float(fluid["robust_min_component_voxels"]))
+    fluid["robust_keep_largest_component"] = bool(fluid["robust_keep_largest_component"])
+    fluid["robust_sdf_smooth_sigma_cells"] = float(fluid["robust_sdf_smooth_sigma_cells"])
+    fluid["cp4a_cleanup_enabled"] = bool(fluid["cp4a_cleanup_enabled"])
+    fluid["cp4a_cleanup_open_cells"] = int(float(fluid["cp4a_cleanup_open_cells"]))
+    fluid["cp4a_cleanup_close_cells"] = int(float(fluid["cp4a_cleanup_close_cells"]))
+    fluid["cp4a_cleanup_blend_cells"] = int(float(fluid["cp4a_cleanup_blend_cells"]))
+    fluid["cp4a_cleanup_periodic_band_cells"] = int(float(fluid["cp4a_cleanup_periodic_band_cells"]))
+    fluid["cp4a_cleanup_min_component_voxels"] = int(float(fluid["cp4a_cleanup_min_component_voxels"]))
+    fluid["cp4a_cleanup_keep_largest_component"] = bool(fluid["cp4a_cleanup_keep_largest_component"])
     return result
 
 
